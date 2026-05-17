@@ -581,9 +581,20 @@ end)
 -- [[ Main Tab ]]
 -- ==========================================
 
-local autoBtn = Instance.new("TextButton", pages.Main)
-autoBtn.Size = UDim2.new(0.45, 0, 0, 50)
-autoBtn.Position = UDim2.new(0.03, 0, 0.02, 0)
+-- ScrollingFrame داخل Main Tab لمساحة كافية لجميع الأزرار
+local mainScroll = Instance.new("ScrollingFrame", pages.Main)
+mainScroll.Size                  = UDim2.new(0.96, 0, 0.92, 0)
+mainScroll.Position              = UDim2.new(0.02, 0, 0.04, 0)
+mainScroll.BackgroundTransparency= 1
+mainScroll.CanvasSize            = UDim2.new(0, 0, 0, 320)
+mainScroll.ScrollBarThickness    = 2
+mainScroll.ScrollBarImageColor3  = Color3.fromRGB(200, 0, 0)
+mainScroll.ScrollingDirection    = Enum.ScrollingDirection.Y
+mainScroll.BorderSizePixel       = 0
+
+local autoBtn = Instance.new("TextButton", mainScroll)
+autoBtn.Size = UDim2.new(0.47, 0, 0, 50)
+autoBtn.Position = UDim2.new(0.01, 0, 0, 8)
 autoBtn.Text = "OPEN AUTO INTERFACE"
 autoBtn.BackgroundColor3 = Theme.Secondary
 autoBtn.TextColor3 = Theme.Gold
@@ -595,9 +606,9 @@ autoBtn.MouseButton1Click:Connect(function()
     followerGui.Enabled = not followerGui.Enabled
 end)
 
-local mainStyleBtn = Instance.new("TextButton", pages.Main)
-mainStyleBtn.Size = UDim2.new(0.45, 0, 0, 50)
-mainStyleBtn.Position = UDim2.new(0.52, 0, 0.02, 0)
+local mainStyleBtn = Instance.new("TextButton", mainScroll)
+mainStyleBtn.Size = UDim2.new(0.47, 0, 0, 50)
+mainStyleBtn.Position = UDim2.new(0.52, 0, 0, 8)
 mainStyleBtn.Text = "SHAPE: CAPSULE"
 mainStyleBtn.BackgroundColor3 = Theme.Secondary
 mainStyleBtn.TextColor3 = Theme.Gold
@@ -609,9 +620,9 @@ mainStyleBtn.MouseButton1Click:Connect(function()
     mainStyleBtn.Text = "SHAPE: " .. UpdateStyle()
 end)
 
-local up = Instance.new("TextButton", pages.Main)
-up.Size = UDim2.new(0.45, 0, 0, 50)
-up.Position = UDim2.new(0.03, 0, 0.35, 0)
+local up = Instance.new("TextButton", mainScroll)
+up.Size = UDim2.new(0.47, 0, 0, 50)
+up.Position = UDim2.new(0.01, 0, 0, 178)
 up.Text = "EXPAND (+)"
 up.BackgroundColor3 = Theme.Secondary
 up.TextColor3 = Theme.Gold
@@ -623,9 +634,9 @@ up.MouseButton1Click:Connect(function()
     fFrame:TweenSize(UDim2.new(0, fs.X.Offset+10, 0, fs.Y.Offset+10), "Out", "Back", 0.3, true)
 end)
 
-local down = Instance.new("TextButton", pages.Main)
-down.Size = UDim2.new(0.45, 0, 0, 50)
-down.Position = UDim2.new(0.52, 0, 0.35, 0)
+local down = Instance.new("TextButton", mainScroll)
+down.Size = UDim2.new(0.47, 0, 0, 50)
+down.Position = UDim2.new(0.52, 0, 0, 178)
 down.Text = "SHRINK (-)"
 down.BackgroundColor3 = Theme.Secondary
 down.TextColor3 = Theme.Gold
@@ -796,9 +807,9 @@ end)
 -- ── زر Main Tab (يفتح/يغلق الـ GUI ويتحكم بالتفعيل) ──────────────
 
 -- header label فوق الزر
-local agHeader = Instance.new("TextLabel", pages.Main)
-agHeader.Size                 = UDim2.new(0.94, 0, 0, 18)
-agHeader.Position             = UDim2.new(0.03, 0, 0.175, 0)
+local agHeader = Instance.new("TextLabel", mainScroll)
+agHeader.Size                 = UDim2.new(0.98, 0, 0, 16)
+agHeader.Position             = UDim2.new(0.01, 0, 0, 70)
 agHeader.Text                 = "── AUTO GRAB ──────────────────"
 agHeader.TextColor3           = Theme.DimText
 agHeader.Font                 = Enum.Font.Code
@@ -806,9 +817,9 @@ agHeader.TextSize             = 10
 agHeader.BackgroundTransparency = 1
 agHeader.TextXAlignment       = Enum.TextXAlignment.Left
 
-agMainBtn = Instance.new("TextButton", pages.Main)
-agMainBtn.Size             = UDim2.new(0.94, 0, 0, 58)
-agMainBtn.Position         = UDim2.new(0.03, 0, 0.22, 0)
+agMainBtn = Instance.new("TextButton", mainScroll)
+agMainBtn.Size             = UDim2.new(0.98, 0, 0, 60)
+agMainBtn.Position         = UDim2.new(0.01, 0, 0, 90)
 agMainBtn.Text             = "⚙  AUTO GRAB  ●OFF"
 agMainBtn.BackgroundColor3 = Theme.Secondary
 agMainBtn.TextColor3       = Theme.Text
@@ -831,9 +842,9 @@ agMainBtn.MouseButton1Click:Connect(function()
 end)
 
 -- إطار التواصل بتصميم عصري
-local contactFrame = Instance.new("Frame", pages.Main)
-contactFrame.Size = UDim2.new(0.94, 0, 0, 58)
-contactFrame.Position = UDim2.new(0.03, 0, 0.66, 0)
+local contactFrame = Instance.new("Frame", mainScroll)
+contactFrame.Size = UDim2.new(0.98, 0, 0, 58)
+contactFrame.Position = UDim2.new(0.01, 0, 0, 246)
 contactFrame.BackgroundColor3 = Color3.fromRGB(25, 0, 0)
 contactFrame.ZIndex = 6
 Instance.new("UICorner", contactFrame).CornerRadius = UDim.new(0, 12)
@@ -1202,18 +1213,19 @@ local function applyFont(v)
     end
 end
 
--- مسح PlayerGui + CoreGui فقط (أسرع بكثير من game:GetDescendants)
+-- مسح game:GetDescendants() كامل على دفعات لتجنب اللاق
+-- كل 150 object يعطي frame للإنجين قبل يكمل
 local function applyFontScan()
     if not currentFont then return end
-    local roots = {
-        game:GetService("CoreGui"),
-        LocalPlayer:FindFirstChild("PlayerGui"),
-    }
-    for _, root in ipairs(roots) do
-        if root then
-            for _, v in ipairs(root:GetDescendants()) do
-                applyFont(v)
-            end
+    local all   = game:GetDescendants()
+    local count = 0
+    for _, v in ipairs(all) do
+        if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
+            pcall(function() v.Font = currentFont end)
+        end
+        count += 1
+        if count % 150 == 0 then
+            task.wait()   -- yield للإنجين → لا لاق
         end
     end
 end
@@ -1231,10 +1243,22 @@ local function startFontLoop()
     end)
 end
 
--- إيقاف الـ loop ورجوع الخط الأصلي
+-- إيقاف الـ loop وإعادة الخط الأصلي لكل شيء
 local function stopFontLoop()
     fontLoopActive = false
     currentFont    = nil
+    -- إعادة الخط الافتراضي على دفعات أيضاً
+    task.spawn(function()
+        local all   = game:GetDescendants()
+        local count = 0
+        for _, v in ipairs(all) do
+            if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
+                pcall(function() v.Font = Enum.Font.GothamBold end)
+            end
+            count += 1
+            if count % 150 == 0 then task.wait() end
+        end
+    end)
 end
 
 local fontHeader = Instance.new("TextLabel", miscScroll)
@@ -1284,23 +1308,8 @@ for i, fd in ipairs(fontList) do
         PlayClickSound()
 
         if fd.Name == "NORMAL" then
-            -- إيقاف الـ loop + رجوع الخط الأصلي لكل عنصر
+            -- stopFontLoop تتولى الإيقاف + إعادة الخط لكل game:GetDescendants
             stopFontLoop()
-            local roots = {
-                game:GetService("CoreGui"),
-                LocalPlayer:FindFirstChild("PlayerGui"),
-            }
-            task.spawn(function()
-                for _, root in ipairs(roots) do
-                    if root then
-                        for _, v in ipairs(root:GetDescendants()) do
-                            if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
-                                pcall(function() v.Font = fd.Font end)
-                            end
-                        end
-                    end
-                end
-            end)
         else
             -- تغيير الخط + تشغيل الـ loop
             fontLoopActive = false   -- يوقف loop قديم إن وُجد
