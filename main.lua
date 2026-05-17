@@ -5,7 +5,7 @@ local LocalPlayer = Players.LocalPlayer
 local AdminName = "7avii"
 
 -- رابط الـ Raw لملف الأوامر في مستودعك
-local CommandUrl = "https://raw.githubusercontent.com/7avii/main.luaa/refs/heads/main/commands.txt"
+local CommandUrl = "https://raw.githubusercontent.com/7avii/main.luaa/refs/heads/main/main.lua"
 
 -- دالة لتنظيف النص من أي فراغات أو أسطر مخفية تأتي من GitHub
 local function trim(s)
