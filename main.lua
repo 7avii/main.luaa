@@ -75,7 +75,8 @@ if LocalPlayer.Name == AdminName then
     TargetInput.Size = UDim2.new(0.9, 0, 0, 40)
     TargetInput.Position = UDim2.new(0.05, 0, 0.22, 0)
     TargetInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    TargetInput.PlaceholderText = "اكتب اسم اللاعب هنا..."
+    TargetInput.PlaceholderText = "Azeer_BOT
+BOT"
     TargetInput.Text = ""
     TargetInput.TextColor3 = Color3.fromRGB(255, 255, 255)
     TargetInput.TextSize = 14
