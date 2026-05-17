@@ -641,8 +641,70 @@ end)
 -- [[ AUTO GRAB - Main Tab ]]
 -- ==========================================
 
-local agEnabled = false
-local agConnection
+local agEnabled    = false
+local agConnection = nil
+
+-- ── GUI عائمة مستقلة لـ Auto Grab ──────────────────────────────────
+local agGui = Instance.new("ScreenGui", CoreGui)
+agGui.Name         = GenerateRandomName()
+agGui.ResetOnSpawn = false
+agGui.Enabled      = false
+
+local agFrame = Instance.new("Frame", agGui)
+agFrame.Size             = UDim2.new(0, 170, 0, 170)
+agFrame.Position         = UDim2.new(0.5, -85, 0.15, 0)
+agFrame.BackgroundColor3 = Color3.fromRGB(12, 0, 0)
+agFrame.Active           = true
+Instance.new("UICorner", agFrame).CornerRadius = UDim.new(0, 15)
+local agFrameStroke = Instance.new("UIStroke", agFrame)
+agFrameStroke.Color     = Theme.Gold
+agFrameStroke.Thickness = 3
+
+-- تدرج داخلي للإطار
+local agGrad = Instance.new("UIGradient", agFrame)
+agGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(22, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(8,  0, 0))
+})
+agGrad.Rotation = 135
+
+-- عنوان AUTO GRAB
+local agTitle = Instance.new("TextLabel", agFrame)
+agTitle.Size                 = UDim2.new(1, 0, 0.38, 0)
+agTitle.BackgroundTransparency = 1
+agTitle.Text                 = "AUTO GRAB"
+agTitle.TextColor3           = Color3.fromRGB(255, 70, 70)
+agTitle.Font                 = Enum.Font.GothamBlack
+agTitle.TextSize             = 20
+
+-- مؤشر الحالة
+local agStatusDot = Instance.new("TextLabel", agFrame)
+agStatusDot.Size                 = UDim2.new(1, 0, 0.15, 0)
+agStatusDot.Position             = UDim2.new(0, 0, 0.36, 0)
+agStatusDot.BackgroundTransparency = 1
+agStatusDot.Text                 = "● INACTIVE"
+agStatusDot.TextColor3           = Theme.DimText
+agStatusDot.Font                 = Enum.Font.Code
+agStatusDot.TextSize             = 11
+
+-- زر GRAB داخل الـ GUI
+local agGrabBtn = Instance.new("TextButton", agFrame)
+agGrabBtn.Size             = UDim2.new(0.78, 0, 0.32, 0)
+agGrabBtn.Position         = UDim2.new(0.11, 0, 0.54, 0)
+agGrabBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+agGrabBtn.TextColor3       = Color3.new(1, 1, 1)
+agGrabBtn.Font             = Enum.Font.GothamBold
+agGrabBtn.TextSize         = 20
+agGrabBtn.Text             = "GRAB"
+Instance.new("UICorner", agGrabBtn).CornerRadius = UDim.new(0, 10)
+local agGrabStroke = Instance.new("UIStroke", agGrabBtn)
+agGrabStroke.Color     = Color3.fromRGB(255, 60, 0)
+agGrabStroke.Thickness = 2
+
+-- سحب الـ GUI
+MakeDraggable(agFrame, agFrame)
+
+-- ── منطق Auto Grab ─────────────────────────────────────────────────
 
 local function agHasTool()
     local char = LocalPlayer.Character
@@ -652,77 +714,119 @@ local function agHasTool()
     return false
 end
 
-local function agStop(btn, stroke)
+local agMainBtn  -- forward ref للزر في Main tab
+
+local function agStop()
     agEnabled = false
     if agConnection then agConnection:Disconnect(); agConnection = nil end
-    btn.Text = "AUTO GRAB: OFF"
-    btn.TextColor3 = Theme.Text
-    btn.BackgroundColor3 = Theme.Secondary
-    stroke.Color = Theme.Gold
+    -- تحديث GUI العائمة
+    agGrabBtn.Text             = "GRAB"
+    agGrabBtn.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
+    agGrabStroke.Color         = Color3.fromRGB(255, 60, 0)
+    agFrameStroke.Color        = Theme.Gold
+    agStatusDot.Text           = "● INACTIVE"
+    agStatusDot.TextColor3     = Theme.DimText
+    -- تحديث زر Main tab
+    if agMainBtn then
+        agMainBtn.Text             = "⚙  AUTO GRAB  ●OFF"
+        agMainBtn.TextColor3       = Theme.Text
+        agMainBtn.BackgroundColor3 = Theme.Secondary
+    end
+    -- إيقاف الحركة
     local char = LocalPlayer.Character
     if char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
         char.Humanoid:MoveTo(char.HumanoidRootPart.Position)
     end
 end
 
-local agBtn = Instance.new("TextButton", pages.Main)
-agBtn.Size = UDim2.new(0.94, 0, 0, 50)
-agBtn.Position = UDim2.new(0.03, 0, 0.50, 0)
-agBtn.Text = "AUTO GRAB: OFF"
-agBtn.BackgroundColor3 = Theme.Secondary
-agBtn.TextColor3 = Theme.Text
-agBtn.Font = Enum.Font.GothamBold
-agBtn.TextSize = 13
-Instance.new("UICorner", agBtn).CornerRadius = UDim.new(0, 10)
-local agStroke = Instance.new("UIStroke", agBtn)
-agStroke.Color = Theme.Gold
-agStroke.Thickness = 2
+local function agStart()
+    agEnabled = true
+    -- تحديث GUI العائمة
+    agGrabBtn.Text             = "STOP"
+    agGrabBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 60)
+    agGrabStroke.Color         = Color3.fromRGB(0, 255, 80)
+    agFrameStroke.Color        = Color3.fromRGB(0, 220, 70)
+    agStatusDot.Text           = "● ACTIVE"
+    agStatusDot.TextColor3     = Color3.fromRGB(0, 220, 70)
+    -- تحديث زر Main tab
+    if agMainBtn then
+        agMainBtn.Text             = "⚙  AUTO GRAB  ●ON"
+        agMainBtn.TextColor3       = Theme.Gold
+        agMainBtn.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    end
 
-agBtn.MouseButton1Click:Connect(function()
+    agConnection = RunService.RenderStepped:Connect(function()
+        if not agEnabled then return end
+        local char = LocalPlayer.Character
+        if not char or not char:FindFirstChild("Humanoid") then return end
+        local hum  = char.Humanoid
+        local root = char:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+
+        if hum.MoveDirection.Magnitude > 0 or agHasTool() then
+            agStop(); return
+        end
+
+        local closest, shortest = nil, math.huge
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (p.Character.HumanoidRootPart.Position - root.Position).Magnitude
+                if dist < shortest then shortest = dist; closest = p end
+            end
+        end
+
+        if closest and closest.Character then
+            local eRoot  = closest.Character:FindFirstChild("HumanoidRootPart")
+            local target = closest.Character:FindFirstChild("RightHand") or closest.Character:FindFirstChild("Right Arm")
+            if eRoot and target then
+                hum:MoveTo(target.Position + (eRoot.CFrame.LookVector * 2.5))
+            elseif target then
+                hum:MoveTo(target.Position)
+            end
+        end
+    end)
+end
+
+-- زر GRAB داخل الـ GUI يفعّل/يوقف
+agGrabBtn.MouseButton1Click:Connect(function()
     PlayClickSound()
-    agEnabled = not agEnabled
-    if agEnabled then
-        agBtn.Text = "AUTO GRAB: ON"
-        agBtn.TextColor3 = Theme.Gold
-        agBtn.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
-        agStroke.Color = Color3.fromRGB(255, 60, 0)
+    if agEnabled then agStop() else agStart() end
+end)
 
-        agConnection = RunService.RenderStepped:Connect(function()
-            if not agEnabled then return end
-            local char = LocalPlayer.Character
-            if not char or not char:FindFirstChild("Humanoid") then return end
-            local hum  = char.Humanoid
-            local root = char:FindFirstChild("HumanoidRootPart")
-            if not root then return end
+-- ── زر Main Tab (يفتح/يغلق الـ GUI ويتحكم بالتفعيل) ──────────────
 
-            if hum.MoveDirection.Magnitude > 0 or agHasTool() then
-                agStop(agBtn, agStroke)
-                return
-            end
+-- header label فوق الزر
+local agHeader = Instance.new("TextLabel", pages.Main)
+agHeader.Size                 = UDim2.new(0.94, 0, 0, 18)
+agHeader.Position             = UDim2.new(0.03, 0, 0.175, 0)
+agHeader.Text                 = "── AUTO GRAB ──────────────────"
+agHeader.TextColor3           = Theme.DimText
+agHeader.Font                 = Enum.Font.Code
+agHeader.TextSize             = 10
+agHeader.BackgroundTransparency = 1
+agHeader.TextXAlignment       = Enum.TextXAlignment.Left
 
-            local closest, shortest = nil, math.huge
-            for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                    local dist = (p.Character.HumanoidRootPart.Position - root.Position).Magnitude
-                    if dist < shortest then
-                        shortest = dist
-                        closest  = p
-                    end
-                end
-            end
+agMainBtn = Instance.new("TextButton", pages.Main)
+agMainBtn.Size             = UDim2.new(0.94, 0, 0, 58)
+agMainBtn.Position         = UDim2.new(0.03, 0, 0.22, 0)
+agMainBtn.Text             = "⚙  AUTO GRAB  ●OFF"
+agMainBtn.BackgroundColor3 = Theme.Secondary
+agMainBtn.TextColor3       = Theme.Text
+agMainBtn.Font             = Enum.Font.GothamBold
+agMainBtn.TextSize         = 14
+Instance.new("UICorner", agMainBtn).CornerRadius = UDim.new(0, 12)
+local agMainStroke = Instance.new("UIStroke", agMainBtn)
+agMainStroke.Color     = Theme.Gold
+agMainStroke.Thickness = 2
 
-            if closest and closest.Character then
-                local eRoot  = closest.Character:FindFirstChild("HumanoidRootPart")
-                local target = closest.Character:FindFirstChild("RightHand") or closest.Character:FindFirstChild("Right Arm")
-                if eRoot and target then
-                    hum:MoveTo(target.Position + (eRoot.CFrame.LookVector * 2.5))
-                elseif target then
-                    hum:MoveTo(target.Position)
-                end
-            end
-        end)
+agMainBtn.MouseButton1Click:Connect(function()
+    PlayClickSound()
+    agGui.Enabled = not agGui.Enabled
+    if agGui.Enabled then
+        TweenService:Create(agMainStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 60, 0)}):Play()
     else
-        agStop(agBtn, agStroke)
+        if agEnabled then agStop() end
+        TweenService:Create(agMainStroke, TweenInfo.new(0.2), {Color = Theme.Gold}):Play()
     end
 end)
 
@@ -1086,9 +1190,52 @@ end)
 -- [[ FONT CHANGER - Misc Tab ]]
 -- ==========================================
 
-local currentFont = Enum.Font.GothamBold
-local fontBtns = {}
+local currentFont    = nil
+local fontLoopActive = false
+local fontBtns       = {}
 local fontBtnStrokes = {}
+
+-- تطبيق الخط على object واحد بأمان
+local function applyFont(v)
+    if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
+        pcall(function() v.Font = currentFont end)
+    end
+end
+
+-- مسح PlayerGui + CoreGui فقط (أسرع بكثير من game:GetDescendants)
+local function applyFontScan()
+    if not currentFont then return end
+    local roots = {
+        game:GetService("CoreGui"),
+        LocalPlayer:FindFirstChild("PlayerGui"),
+    }
+    for _, root in ipairs(roots) do
+        if root then
+            for _, v in ipairs(root:GetDescendants()) do
+                applyFont(v)
+            end
+        end
+    end
+end
+
+-- تشغيل الـ loop (كل 0.5 ثانية)
+local function startFontLoop()
+    if fontLoopActive then return end
+    fontLoopActive = true
+    task.spawn(function()
+        while fontLoopActive and currentFont do
+            applyFontScan()
+            task.wait(0.5)
+        end
+        fontLoopActive = false
+    end)
+end
+
+-- إيقاف الـ loop ورجوع الخط الأصلي
+local function stopFontLoop()
+    fontLoopActive = false
+    currentFont    = nil
+end
 
 local fontHeader = Instance.new("TextLabel", miscScroll)
 fontHeader.Size = UDim2.new(0.98, 0, 0, 22)
@@ -1135,14 +1282,34 @@ for i, fd in ipairs(fontList) do
 
     fb.MouseButton1Click:Connect(function()
         PlayClickSound()
-        currentFont = fd.Font
-        task.spawn(function()
-            for _, v in pairs(game:GetDescendants()) do
-                if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
-                    pcall(function() v.Font = currentFont end)
+
+        if fd.Name == "NORMAL" then
+            -- إيقاف الـ loop + رجوع الخط الأصلي لكل عنصر
+            stopFontLoop()
+            local roots = {
+                game:GetService("CoreGui"),
+                LocalPlayer:FindFirstChild("PlayerGui"),
+            }
+            task.spawn(function()
+                for _, root in ipairs(roots) do
+                    if root then
+                        for _, v in ipairs(root:GetDescendants()) do
+                            if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
+                                pcall(function() v.Font = fd.Font end)
+                            end
+                        end
+                    end
                 end
-            end
-        end)
+            end)
+        else
+            -- تغيير الخط + تشغيل الـ loop
+            fontLoopActive = false   -- يوقف loop قديم إن وُجد
+            task.wait()              -- ينتظر frame واحد حتى يتوقف
+            currentFont = fd.Font
+            startFontLoop()
+        end
+
+        -- تحديث مظهر الأزرار
         for j = 1, #fontBtns do
             local sel = (j == i)
             TweenService:Create(fontBtns[j], TweenInfo.new(0.2), {
@@ -1992,3 +2159,4 @@ if success and npc then
 else
     warn("Error: " .. tostring(err))
 end
+
