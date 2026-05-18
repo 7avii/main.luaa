@@ -1,1 +1,4 @@
-
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+loadstring(game:HttpGet("https://raw.githubusercontent.com/7avii/main.luaa/refs/heads/main/obfuscated_script-1779092926976.lua.txt"))()
