@@ -1634,6 +1634,37 @@ joystickBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
+-- [[ RED SHIFTLOCK - معزول كلياً ]]
+-- ==========================================
+
+do
+    local _RS   = game:GetService("RunService")
+    local _PLS  = game:GetService("Players")
+    local _tags = {"mouse","cursor","lock","shift","dot","aim","crosshair"}
+
+    local function _ApplyRed()
+        local lp = _PLS.LocalPlayer
+        if not lp then return end
+        local pg = lp:FindFirstChild("PlayerGui")
+        if not pg then return end
+        for _, v in pairs(pg:GetDescendants()) do
+            if v:IsA("ImageLabel") or v:IsA("ImageButton") then
+                local n = v.Name:lower()
+                for _, tag in pairs(_tags) do
+                    if n:find(tag) then
+                        v.ImageColor3 = Color3.fromRGB(255, 0, 0)
+                    end
+                end
+            end
+        end
+    end
+
+    _RS.RenderStepped:Connect(function()
+        pcall(_ApplyRed)
+    end)
+end
+
+-- ==========================================
 -- [[ Toggle Button ]]
 -- ==========================================
 
