@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/7avii/main.luaa/refs/heads/main/obfuscated_script-1782892031612.lua.txt"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/7avii/main.luaa/refs/heads/main/obfuscated_script-1782892477095.lua.txt"))()
